@@ -1,24 +1,40 @@
 import 'package:dart_frog/dart_frog.dart';
+import 'package:loja_estoque_api/models/produto.dart';
 
 Response onRequest(RequestContext context) {
   final produtos = [
-    {
-      'codigo': '0001',
-      'nome': 'Camiseta Farm',
-      'tamanho': 'M',
-      'cor': 'Azul',
-      'quantidade': 12,
-      'valor_venda': 49.90,
-    },
-    {
-      'codigo': '0002',
-      'nome': 'Camiseta Farm',
-      'tamanho': 'G',
-      'cor': 'Azul',
-      'quantidade': 1,
-      'valor_venda': 49.90,
-    },
+    Produto(
+      codigo: '0001',
+
+      nome: 'Camiseta Farm',
+      categoria: 'Camiseta',
+      marca: 'Farm',
+      fornecedor: 'Distribuidora ABC',
+      tamanho: 'M',
+      cor: 'Azul',
+      custo: 25,
+      valorVenda: 49.90,
+      estoqueMinimo: 3,
+      quantidadeAtual: 12,
+      status: 'disponivel',
+    ),
+    Produto(
+      codigo: '0002',
+      nome: 'Camiseta Farm',
+      categoria: 'Camiseta',
+      marca: 'Farm',
+      fornecedor: 'Distribuidora ABC',
+      tamanho: 'G',
+      cor: 'Azul',
+      custo: 25,
+      valorVenda: 49.90,
+      estoqueMinimo: 3,
+      quantidadeAtual: 1,
+      status: 'disponivel',
+    ),
   ];
 
-  return Response.json(body: produtos);
+  final produtosJson = produtos.map((produto) => produto.toJson()).toList();
+
+  return Response.json(body: produtosJson);
 }
