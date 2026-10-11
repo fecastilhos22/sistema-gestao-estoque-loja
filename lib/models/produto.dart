@@ -16,6 +16,24 @@ class Produto {
     required this.status,
   });
 
+  /// Cria um [Produto] a partir de uma linha da tabela produtos do banco.
+  factory Produto.fromRow(Map<String, dynamic> linha) {
+    return Produto(
+      codigo: linha['codigo'] as String,
+      nome: linha['nome'] as String,
+      categoria: linha['categoria'] as String,
+      marca: linha['marca'] as String,
+      fornecedor: linha['fornecedor'] as String,
+      tamanho: linha['tamanho'] as String,
+      cor: linha['cor'] as String,
+      custo: double.parse(linha['custo'].toString()),
+      valorVenda: double.parse(linha['valor_venda'].toString()),
+      estoqueMinimo: linha['estoque_minimo'] as int,
+      quantidadeAtual: linha['quantidade_atual'] as int,
+      status: linha['status'] as String,
+    );
+  }
+
   /// Código numérico sequencial, gerado automaticamente.
   final String codigo;
 
