@@ -1,24 +1,19 @@
 import 'package:dart_frog/dart_frog.dart';
+import 'package:loja_estoque_api/conexao_banco.dart';
+import 'package:loja_estoque_api/models/produto.dart';
 
-Response onRequest(RequestContext context) {
-  final produtos = [
-    {
-      'codigo': '0001',
-      'nome': 'Camiseta Farm',
-      'tamanho': 'M',
-      'cor': 'Azul',
-      'quantidade': 12,
-      'valor_venda': 49.90,
-    },
-    {
-      'codigo': '0002',
-      'nome': 'Camiseta Farm',
-      'tamanho': 'G',
-      'cor': 'Azul',
-      'quantidade': 1,
-      'valor_venda': 49.90,
-    },
-  ];
-
-  return Response.json(body: produtos);
+Future<Response> onRequest(RequestContext context) async {
+  final conexao = await abrirConexao();
+  try {
+    final resultado = await conexao.execute(
+      'SELECT * FROM produtos ORDER BY id',
+    );
+    final produtos = resultado
+        .map((linha) => Produto.fromRow(linha.toColumnMap()))
+        .toList();
+    final produtosJson = produtos.map((p) => p.toJson()).toList();
+    return Response.json(body: produtosJson);
+  } finally {
+    await conexao.close();
+  }
 }
