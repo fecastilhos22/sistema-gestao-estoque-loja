@@ -1,33 +1,33 @@
 import 'package:dart_frog/dart_frog.dart';
+import 'package:loja_estoque_api/conexao_banco.dart';
 import 'package:loja_estoque_api/models/item_venda.dart';
 import 'package:loja_estoque_api/models/venda.dart';
 
-Response onRequest(RequestContext context) {
-  final vendas = [
-    Venda(
-      id: 1,
-      data: '2026-09-16',
-      formaPagamento: 'pix',
-      numParcelas: null,
-      valorTotal: 49.90,
-      itens: [
-        ItemVenda(produtoCodigo: '0001', valorUnitario: 49.90),
-      ],
-    ),
-    Venda(
-      id: 2,
-      data: '2026-09-16',
-      formaPagamento: 'credito_parcelado',
-      numParcelas: 3,
-      valorTotal: 179.80,
-      itens: [
-        ItemVenda(produtoCodigo: '0001', valorUnitario: 49.90),
-        ItemVenda(produtoCodigo: '0003', valorUnitario: 129.90),
-      ],
-    ),
-  ];
+Future<Response> onRequest(RequestContext context) async {
+  final conexao = await abrirConexao();
+  try {
+    final linhasVendas = await conexao.execute(
+      'SELECT * FROM vendas ORDER BY id',
+    );
+    final linhasItens = await conexao.execute('''
+      SELECT i.venda_id, p.codigo AS produto_codigo, i.valor_unitario
+      FROM itens_venda i
+      JOIN produtos p ON p.id = i.produto_id
+      ORDER BY i.id
+    ''');
+    final itens = linhasItens.map((l) => l.toColumnMap()).toList();
 
-  final vendasJson = vendas.map((venda) => venda.toJson()).toList();
+    final vendas = linhasVendas.map((linha) {
+      final mapa = linha.toColumnMap();
+      final itensDaVenda = itens
+          .where((item) => item['venda_id'] == mapa['id'])
+          .map(ItemVenda.fromRow)
+          .toList();
+      return Venda.fromRow(mapa, itensDaVenda);
+    }).toList();
 
-  return Response.json(body: vendasJson);
+    return Response.json(body: vendas.map((v) => v.toJson()).toList());
+  } finally {
+    await conexao.close();
+  }
 }

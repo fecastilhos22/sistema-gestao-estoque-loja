@@ -12,6 +12,18 @@ class Venda {
     required this.itens,
   });
 
+  /// Cria uma [Venda] a partir de uma linha do banco e dos itens dela.
+  factory Venda.fromRow(Map<String, dynamic> linha, List<ItemVenda> itens) {
+    return Venda(
+      id: linha['id'] as int,
+      data: linha['data'].toString().substring(0, 10),
+      formaPagamento: linha['forma_pagamento'] as String,
+      numParcelas: linha['num_parcelas'] as int?,
+      valorTotal: double.parse(linha['valor_total'].toString()),
+      itens: itens,
+    );
+  }
+
   /// Identificador da venda.
   final int id;
 

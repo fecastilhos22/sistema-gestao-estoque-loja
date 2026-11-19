@@ -6,6 +6,14 @@ class ItemVenda {
     required this.valorUnitario,
   });
 
+  /// Cria um [ItemVenda] a partir de uma linha do banco.
+  factory ItemVenda.fromRow(Map<String, dynamic> linha) {
+    return ItemVenda(
+      produtoCodigo: linha['produto_codigo'] as String,
+      valorUnitario: double.parse(linha['valor_unitario'].toString()),
+    );
+  }
+
   /// Código do produto vendido.
   final String produtoCodigo;
 
