@@ -12,6 +12,35 @@ class CaixaDia {
     required this.lancamentos,
   });
 
+  /// Cria um [CaixaDia] a partir de uma linha do banco e dos lançamentos.
+  /// O valor de fechamento esperado é calculado aqui.
+  factory CaixaDia.fromRow(
+    Map<String, dynamic> linha,
+    List<CaixaLancamento> lancamentos,
+  ) {
+    final abertura = double.parse(linha['valor_abertura'].toString());
+    final entradas = lancamentos
+        .where((l) => l.tipo == 'entrada')
+        .fold<double>(0, (soma, l) => soma + l.valor);
+    final saidas = lancamentos
+        .where((l) => l.tipo == 'saida')
+        .fold<double>(0, (soma, l) => soma + l.valor);
+    final conferido = linha['valor_fechamento_conferido'];
+
+    return CaixaDia(
+      data: linha['data'].toString().substring(0, 10),
+      valorAbertura: abertura,
+      valorFechamentoEsperado: double.parse(
+        (abertura + entradas - saidas).toStringAsFixed(2),
+      ),
+      valorFechamentoConferido: conferido == null
+          ? null
+          : double.parse(conferido.toString()),
+      status: linha['status'] as String,
+      lancamentos: lancamentos,
+    );
+  }
+
   /// Data do caixa (ex: "2026-09-16").
   final String data;
 

@@ -9,6 +9,17 @@ class CaixaLancamento {
     required this.hora,
   });
 
+  /// Cria um [CaixaLancamento] a partir de uma linha do banco.
+  factory CaixaLancamento.fromRow(Map<String, dynamic> linha) {
+    return CaixaLancamento(
+      tipo: linha['tipo'] as String,
+      origem: linha['origem'] as String,
+      categoria: linha['categoria'] as String,
+      valor: double.parse(linha['valor'].toString()),
+      hora: linha['hora'] as String,
+    );
+  }
+
   /// "entrada" ou "saida".
   final String tipo;
 
