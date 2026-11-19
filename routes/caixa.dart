@@ -1,38 +1,44 @@
+import 'dart:io';
+
 import 'package:dart_frog/dart_frog.dart';
+import 'package:loja_estoque_api/conexao_banco.dart';
 import 'package:loja_estoque_api/models/caixa_dia.dart';
 import 'package:loja_estoque_api/models/caixa_lancamento.dart';
+import 'package:postgres/postgres.dart';
 
-Response onRequest(RequestContext context) {
-  final caixaDia = CaixaDia(
-    data: '2026-09-16',
-    valorAbertura: 100,
-    valorFechamentoEsperado: 349.80,
-    valorFechamentoConferido: null,
-    status: 'aberto',
-    lancamentos: [
-      CaixaLancamento(
-        tipo: 'entrada',
-        origem: 'venda',
-        categoria: 'venda_pix',
-        valor: 49.90,
-        hora: '10:05',
-      ),
-      CaixaLancamento(
-        tipo: 'entrada',
-        origem: 'venda',
-        categoria: 'venda_credito',
-        valor: 179.80,
-        hora: '14:22',
-      ),
-      CaixaLancamento(
-        tipo: 'saida',
-        origem: 'manual',
-        categoria: 'aluguel',
-        valor: 20,
-        hora: '09:00',
-      ),
-    ],
-  );
+Future<Response> onRequest(RequestContext context) async {
+  final conexao = await abrirConexao();
+  try {
+    final dia = await conexao.execute('''
+      SELECT * FROM caixa_dia
+      WHERE data = (now() AT TIME ZONE 'America/Sao_Paulo')::date
+    ''');
+    if (dia.isEmpty) {
+      return Response.json(
+        statusCode: HttpStatus.notFound,
+        body: {'erro': 'Nenhum caixa aberto hoje'},
+      );
+    }
+    final linhaDia = dia.first.toColumnMap();
 
-  return Response.json(body: caixaDia.toJson());
+    final linhas = await conexao.execute(
+      Sql.named('''
+        SELECT tipo, origem, categoria, valor,
+          to_char(criado_em AT TIME ZONE 'America/Sao_Paulo', 'HH24:MI')
+            AS hora
+        FROM caixa_lancamentos
+        WHERE caixa_dia_id = @id
+        ORDER BY id
+      '''),
+      parameters: {'id': linhaDia['id']},
+    );
+    final lancamentos = linhas
+        .map((l) => CaixaLancamento.fromRow(l.toColumnMap()))
+        .toList();
+
+    final caixa = CaixaDia.fromRow(linhaDia, lancamentos);
+    return Response.json(body: caixa.toJson());
+  } finally {
+    await conexao.close();
+  }
 }
