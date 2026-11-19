@@ -6,6 +6,14 @@ class ProdutoMaisVendido {
     required this.quantidade,
   });
 
+  /// Cria um [ProdutoMaisVendido] a partir de uma linha do banco.
+  factory ProdutoMaisVendido.fromRow(Map<String, dynamic> linha) {
+    return ProdutoMaisVendido(
+      nome: linha['nome'] as String,
+      quantidade: linha['quantidade'] as int,
+    );
+  }
+
   /// Nome do produto.
   final String nome;
 
