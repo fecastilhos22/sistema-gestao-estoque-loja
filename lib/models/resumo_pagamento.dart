@@ -7,6 +7,14 @@ class ResumoPagamento {
     required this.valor,
   });
 
+  /// Cria um [ResumoPagamento] a partir de uma linha do banco.
+  factory ResumoPagamento.fromRow(Map<String, dynamic> linha) {
+    return ResumoPagamento(
+      forma: linha['forma'] as String,
+      valor: double.parse(linha['valor'].toString()),
+    );
+  }
+
   /// Forma de pagamento (ex: "pix", "dinheiro").
   final String forma;
 
